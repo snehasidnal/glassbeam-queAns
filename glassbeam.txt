@@ -1,0 +1,109 @@
+
+
+
+
+
+
+
+
+
+
+
+
+//question-1
+import java.util.*;
+class A1{
+public static void main(String args[]){
+Scanner sc=new Scanner(System.in);
+int n=sc.nextInt();
+if(n%3==0){
+ System.out.println("AE");
+ }
+ else if(n%3==1){
+  System.out.println("EC");
+  }
+  else if(n%3==2){
+	  System.out.println(" CA");
+  }
+
+}
+}
+
+
+//question-2
+import java.util.*;
+class A2{
+public static void main(String args[]){
+Scanner sc=new Scanner(System.in);
+int m=sc.nextInt();
+int product=1;
+int count=0;
+while(m!=0){
+     product =product+(m%10);
+     m=m/10;
+     if(m==0){
+     count++;
+     if(product/10==0){
+		 break;
+		 }
+		 m=product;
+		 product=1;
+	 }
+ }
+ System.out.println("The total number of steps to reach the single digit is "+count);
+}
+}
+
+//question-3
+import java.util.LinkedList;
+import java.util.Queue;
+
+public class DataPairing {
+    public static void main(String[] args) {
+        Queue<Data> channel1 = new LinkedList<>();
+        Queue<Data> channel2 = new LinkedList<>();
+        channel1.add(new Data("R", 1, 1));
+        channel1.add(new Data("R", 1, 2));
+        channel1.add(new Data("R", 1, 3));
+        channel1.add(new Data("B", 1, 4));
+        channel1.add(new Data("B", 1, 8));
+        channel1.add(new Data("G", 1, 5));
+        channel2.add(new Data("B", 2, 6));
+        channel2.add(new Data("B", 2, 8));
+        channel2.add(new Data("R", 2, 9));
+        channel2.add(new Data("G", 2, 10));
+        channel2.add(new Data("B", 2, 7));
+        channel2.add(new Data("R", 2, 20));
+
+        while (!channel1.isEmpty() && !channel2.isEmpty()) {
+            Data data1 = channel1.peek();
+            Data data2 = channel2.peek();
+            if (data1.type.equals(data2.type)) {
+                System.out.println("(" + data1 + ", " + data2 + ")");
+                channel1.poll();
+                channel2.poll();
+            } else if (channel1.size() > channel2.size()) {
+                channel2.add(channel2.poll());
+            } else {
+                channel1.add(channel1.poll());
+            }
+        }
+    }
+}
+
+class Data {
+    String type;
+    int channelNumber;
+    int uniqueID;
+
+    public Data(String type, int channelNumber, int uniqueID) {
+        this.type = type;
+        this.channelNumber = channelNumber;
+        this.uniqueID = uniqueID;
+    }
+
+    @Override
+    public String toString() {
+        return type + channelNumber + "_" + uniqueID;
+    }
+}
