@@ -1,4 +1,15 @@
 
+
+
+
+
+
+
+
+
+
+
+
 //question-1
 import java.util.*;
 class A1{
@@ -17,7 +28,7 @@ if(n%3==0){
 
 }
 }
-
+-----------------------------------------------------------------------------------------------------
 
 //question-2
 import java.util.*;
@@ -42,6 +53,8 @@ while(m!=0){
  System.out.println("The total number of steps to reach the single digit is "+count);
 }
 }
+
+-----------------------------------------------------------------------------------------------------
 
 //question-3
 import java.util.LinkedList;
@@ -96,3 +109,287 @@ class Data {
         return type + channelNumber + "_" + uniqueID;
     }
 }
+
+--------------------------------------------------------------------------------------------------------------------
+
+4th que
+
+clent 
+
+
+
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.util.*;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+
+public class Client {
+    private static Map<String, Match> matches = new HashMap<>();
+
+     private static class Match {
+        String location;
+        List teams;
+        String battingTeam;
+        int chasing;
+        int runs;
+        int overs;
+        boolean started;
+        boolean ended;
+
+        Match(List teams, String location) {
+            this.teams = teams;
+            this.location = location;
+        }
+
+        public List getTeam() {
+            return this.teams;
+        }
+
+         public String getLocation() {
+             return this.location;
+         }
+         public int getRuns() {
+             return this.runs;
+         }
+         public int getOvers() {
+             return this.overs;
+         }
+
+         public String getBattingTeam() {
+             return this.battingTeam;
+         }
+         public void setRuns(int runs) {
+              this.runs = runs;
+         }
+
+         public void setOvers(int overs) {
+             this.overs = overs;
+         }
+         public  void setBattingTeam(String battingTeam){
+            this.battingTeam = battingTeam;
+         }
+
+         public void setChasing(int chasing){
+            this.chasing = chasing;
+         }
+    }
+
+    public static void listenOnChannel1() {
+        try {
+            DatagramSocket socket = new DatagramSocket(54321);
+            while (true) {
+                byte[] buffer = new byte[9999];
+                DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+                socket.receive(packet);
+
+                // Parse JSON message and create or end a match as necessary
+                String message = new String(packet.getData(), 0, packet.getLength());
+//                System.out.println(message);
+
+                JSONObject json = new JSONObject(message);
+                JSONArray teams = json.getJSONArray("teams");
+                String location = json.getString("location");
+                String state = json.getString("state");
+                if (state.equals("started")) {
+                    // Check if match already exists
+                    Match match = matches.get(teams.get(0));
+                    if (match == null) {
+                        match = new Match(teams.toList(), location);
+                        matches.put((String) teams.get(0), match);
+                    }
+
+                } else if (state.equals("ended")) {
+
+                    }
+                }
+        } catch (IOException e) {
+            // Log error and exit thread
+            System.out.println(e);
+            return;
+        }
+    }
+
+    public static void listenOnChannel2() {
+        try {
+            DatagramSocket socket1 = new DatagramSocket(54322);
+            while (true) {
+                byte[] buffer = new byte[9999];
+                DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+                socket1.receive(packet);
+
+                // Parse JSON message and create or end a match as necessary
+                String message = new String(packet.getData(), 0, packet.getLength());
+
+                JSONObject json = new JSONObject(message);
+                JSONArray teams1 = json.getJSONArray("teams");
+                String batting = json.getString("batting");
+                int runs = json.getInt("runs");
+                int overs =json.getInt("overs");
+                int chasing =json.getInt("chasing");
+                if(matches!= null){
+                    Match match = matches.get(teams1.get(0));
+                    if(match!= null ) {
+                        match.setRuns(runs);
+                        match.setChasing(chasing);
+                        match.setOvers(overs);
+                        match.setBattingTeam(batting);
+                    }
+                    }
+                }
+            }
+        catch (IOException e) {
+            // Log error and exit thread
+            System.out.println(e);
+        }
+    }
+    public static void main(String[] args) throws IOException {
+        new Thread(Client::listenOnChannel1).start();
+        new Thread(Client::listenOnChannel2).start();
+
+//         Start command line interface for getting latest scores
+        Scanner scanner = new Scanner(System.in);
+        while (true) {
+            System.out.print("Enter the name of one of the teams playing the match: ");
+            String teamName = scanner.nextLine();
+            Match match = matches.get(teamName);
+            if (match == null) {
+                System.out.println("No match with " + teamName + " is currently in progress");
+            } else {
+                System.out.println("Match between " + match.getTeam().get(0) + " & " +match.getTeam().get(1) +
+                        " at " + match.getLocation() + ". " + match.getBattingTeam() + " is batting and has scored " +
+                        match.getRuns() + " runs in " + match.getOvers() + " overs.");
+            }
+        }
+
+    }
+}
+
+
+
+filename server - udpChannel1
+
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.util.Scanner;
+
+import org.json.JSONObject;
+
+public class Server {
+    public static void main(String[] args) throws IOException {
+        // Create a DatagramSocket to listen for incoming packets on port 12345
+        DatagramSocket socket = new DatagramSocket(12345);
+
+        // Create a Scanner to read input from the user
+
+
+
+        while (true) {
+            // Read a message from the user
+            Scanner scanner = new Scanner(System.in);
+            System.out.print("Enter a Teams 1: ");
+            String[] team = new String[2];
+            team[0] = scanner.nextLine();
+            System.out.print("Enter a Teams 2: ");
+            team[1] = scanner.nextLine();
+            System.out.print("Enter a Location: ");
+            String location = scanner.nextLine();
+            System.out.print("Enter a State: ");
+            String state = scanner.nextLine();
+
+            // Create a JSON object from the message
+            JSONObject json = new JSONObject();
+            json.put("teams", team);
+            json.put("location",location);
+            json.put("state",state);
+
+            // Convert the JSON object to a string
+            String jsonString = json.toString();
+
+            // Convert the string to a byte array
+            byte[] data = jsonString.getBytes();
+
+            // Create a DatagramPacket to send the data to the client
+            InetAddress address = InetAddress.getByName("localhost");
+            DatagramPacket packet = new DatagramPacket(data, data.length, address, 54321);
+
+            // Send the packet
+            socket.send(packet);
+        }
+    }
+}
+
+
+filename -server2 - udpChannel2
+
+
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.util.Scanner;
+
+import org.json.JSONObject;
+
+public class Server2 {
+    public static void main(String[] args) throws IOException {
+        // Create a DatagramSocket to listen for incoming packets on port 12345
+        DatagramSocket socket = new DatagramSocket(12344);
+
+        // Create a Scanner to read input from the user
+
+
+
+        while (true) {
+            // Read a message from the user
+            Scanner scanner = new Scanner(System.in);
+            System.out.print("Enter a Teams 1: ");
+            String[] team = new String[2];
+            team[0] = scanner.nextLine();
+            System.out.print("Enter a Teams 2: ");
+            team[1] = scanner.nextLine();
+            System.out.print("Enter a batting: ");
+            String batting = scanner.nextLine();
+            System.out.print("Enter a runs: ");
+            int runs = scanner.nextInt();
+            System.out.print("Enter a overs: ");
+            int overs = scanner.nextInt();
+            System.out.print("Enter a chasing: ");
+            int chasing = scanner.nextInt();
+
+            // Create a JSON object from the message
+            JSONObject json = new JSONObject();
+            json.put("teams", team);
+            json.put("batting",batting);
+            json.put("runs",runs);
+            json.put("overs",overs);
+            json.put("chasing",chasing);
+
+            // Convert the JSON object to a string
+            String jsonString = json.toString();
+
+            // Convert the string to a byte array
+            byte[] data = jsonString.getBytes();
+
+            // Create a DatagramPacket to send the data to the client
+            InetAddress address = InetAddress.getByName("localhost");
+            DatagramPacket packet = new DatagramPacket(data, data.length, address, 54322);
+
+            // Send the packet
+            socket.send(packet);
+        }
+    }
+}
+
+
+readme file for this 4th que : -
+
+
+for 1st , 2nd , 3rd answers are there in respective folders and 4th que answer file name is SocketServer in that there are 3 files came called client , server and server2 where you need to run all the 3 files server = UDPchennal1 and server2 = UDPChennal2 1st you need to enter the details asked by server and server 2 and then run client.java file then enter the details asked
+
+Thanks
